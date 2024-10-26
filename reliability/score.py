@@ -4,9 +4,8 @@ import torch
 from transformers import BertTokenizer
 
 tokenizer = BertTokenizer.from_pretrained('google-bert/bert-base-multilingual-uncased')
-model = torch.load('checkpoints/bert_multilingual.pt')  # 전체 모델을 통째로 불러옴
-model.load_state_dict(torch.load('checkpoints/50k_ep50_241011.pt'))  # state_dict를 불러 온 후, 모델에 저장
-model.to("cpu")
+model = torch.load('reliability/checkpoints/bert_multilingual.pt', map_location=torch.device('cpu'))  # 전체 모델을 통째로 불러옴
+model.load_state_dict(torch.load('reliability/checkpoints/50k_ep50_241011.pt', map_location=torch.device('cpu')))  # state_dict를 불러 온 후, 모델에 저장
 
 # 문장을 BERT 임베딩으로 변환하는 함수
 def get_bert_embedding(text):
@@ -74,7 +73,8 @@ def calculate_news_reliability(title, body):
     reliability_score = (title_body_similarity * title_weight) + (sentence_coherence * body_weight)
     
     # 0~100 사이로 변환
-    reliability_score = reliability_score * 100
+    # NaN 값일 경우 0으로 대체
+    reliability_score = 0 if np.isnan(reliability_score) else reliability_score * 100
     return reliability_score
 
 ##### 사용 예시 #####
