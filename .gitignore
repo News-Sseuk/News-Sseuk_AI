@@ -1,4 +1,5 @@
 config.py
 /__pycache__
-/reliability/__pycache__/
 /reliability/checkpoints/
+/summarization/t5-korean-summary-model-v1/model.safetensors
+/*/__pycache__/
