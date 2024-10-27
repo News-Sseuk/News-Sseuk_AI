@@ -1,9 +1,9 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import nltk
-nltk.download('punkt')
+nltk.download('punkt_tab')
 
 # 모델과 토크나이저 경로
-save_directory = "./t5-korean-summary-model-v1"
+save_directory = "summarization/t5-korean-summary-model-v1"
 tokenizer = AutoTokenizer.from_pretrained(save_directory)
 model = AutoModelForSeq2SeqLM.from_pretrained(save_directory)
 
