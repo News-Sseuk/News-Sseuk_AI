@@ -13,9 +13,10 @@ class save_each_article_detail(Resource):
     def post(self):
         db_connection = Mysql.get_mysql_connection(self)
         cursor = db_connection.cursor()
+        article_id = request.args.get("id")
         # GET
-        query = 'SELECT a.id, a.nosql_id FROM article a WHERE a.reliability IS NULL'
-        cursor.execute(query)
+        query = 'SELECT a.id, a.nosql_id FROM article a WHERE a.id= %s'
+        cursor.execute(query, (article_id,))
         # return
         db_object = Mongo.get_mongo_connection(self)
         for row in cursor.fetchall():
