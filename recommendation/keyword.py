@@ -15,7 +15,7 @@ file_path = os.path.join(current_dir, 'korean_stopwords.txt')
 with open(file_path, 'r') as f:
     list_file = f.readlines()
 stopwords = list([item.strip() for item in list_file])
-stopwords.extend(['나는', '작가', '저자', '주인공', '독서', '문장', '내용', '이제', '오늘', '올해'])
+stopwords.extend([''기자', '취재', '뉴스', '보도', '기사', '언론', '오늘', '올해', '지금', '내일', '어제', '지난해', '작년'])
 
 # Komoran 객체 초기화
 komoran = Komoran()
