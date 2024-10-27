@@ -15,7 +15,7 @@ file_path = os.path.join(current_dir, 'korean_stopwords.txt')
 with open(file_path, 'r') as f:
     list_file = f.readlines()
 stopwords = list([item.strip() for item in list_file])
-stopwords.extend([''기자', '취재', '뉴스', '보도', '기사', '언론', '오늘', '올해', '지금', '내일', '어제', '지난해', '작년'])
+stopwords.extend(['기자', '취재', '뉴스', '보도', '기사', '언론', '오늘', '올해', '지금', '내일', '어제', '지난해', '작년'])
 
 # Komoran 객체 초기화
 komoran = Komoran()
@@ -49,7 +49,7 @@ def final(text):
 def preprocess_text(text):
     return final(preprocess(text))
 
-# extract_keywords 함수 구현
+# 기사 본문 키워드 추출
 def extract_keywords(text: str, top_n: int = 3) -> list:
     # 단일 텍스트를 처리하기 위해 DataFrame 생성
     df = pd.DataFrame({'newsContent': [text]})
