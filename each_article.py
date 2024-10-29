@@ -4,6 +4,7 @@ from db_connection import Mongo, Mysql
 from bson.objectid import ObjectId
 from reliability.score import calculate_news_reliability
 from summarization.summary import summarize_article
+from summarization.issue import extract_issue_article
 from recommendation.keyword import extract_keywords
 
 article = Namespace('Article')
@@ -25,18 +26,19 @@ class save_each_article_detail(Resource):
             score = calculate_news_reliability(article["title"], article["content"])
             keyword_list = extract_keywords(article["content"])
             summarized_text = summarize_article(article["content"])
+            issue_text = extract_issue_article(article["content"])
 
-            update_query = "UPDATE article SET reliability = %s, summary = %s WHERE id = %s"
+            update_query = "UPDATE article SET reliability = %s, summary = %s, issue = %s WHERE id = %s"
             # 1. 키워드가 존재하지 않으면 HashTag 테이블에 추가
-            insert_query = ("""INSERT IGNORE INTO Hash_Tag (name) VALUES {}"""
+            insert_query = ("""INSERT IGNORE INTO hash_tag (name) VALUES {}"""
                             .format(", ".join(f"('{keyword}')" for keyword in keyword_list)))
             # 2. ArticleHashTag에 매핑을 추가하기 위한 SQL
             map_sql = ("""
-            INSERT INTO Article_Hash_Tag (article_id, hashtag_id)
-            SELECT %s, id FROM Hash_Tag WHERE name IN ({})"""
+            INSERT INTO article_hash_tag (article_id, hashtag_id)
+            SELECT %s, id FROM hash_tag WHERE name IN ({})"""
                        .format(", ".join(f"'{keyword}'" for keyword in keyword_list)))
 
-            cursor.execute(update_query, (int(score), summarized_text, row[0],))
+            cursor.execute(update_query, (int(score), summarized_text, issue_text, row[0],))
             cursor.execute(insert_query)
             cursor.execute(map_sql, (row[0],))
 
