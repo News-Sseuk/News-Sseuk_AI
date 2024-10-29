@@ -17,6 +17,8 @@ class Mysql:
 class Mongo:
     def get_mongo_connection(self):
         client = MongoClient(Mongo_Config.mongo_connect, tlsCAFile=certifi.where())
-        connection = client["ArticleDB"]
+        #connection = client["ArticleDB"]
+        #collection = connection.Articles
+        connection = client["news-sseuk"]
         collection = connection.Articles
         return collection
