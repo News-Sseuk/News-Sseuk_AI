@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from typing import List
-from keyword import extract_keywords
+from keyword import extract_keywords, preprocess_text
 
 # 이슈 기반 유사 기사 추천
 def recommend_similar_articles(issue_text: str, articles_df: pd.DataFrame) -> List[str]:
