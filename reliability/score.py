@@ -40,7 +40,7 @@ def calculate_title_body_similarity(title, body):
     return similarity_score
 
 # 요약문 기반 문장 간 유사성 평가
-def evaluate_sentence_coherence(sentences):    
+def evaluate_sentence_coherence(text):
     summary_text = summarize_article(text)
     summary_embedding = get_bert_embedding(summary_text)
     
@@ -59,7 +59,7 @@ def calculate_news_reliability(title, body):
     title_body_similarity = calculate_title_body_similarity(title, body)
     
     # 2. 본문 내 문장 간 연관도 계산
-    sentence_coherence = evaluate_sentence_coherence(sentences)
+    sentence_coherence = evaluate_sentence_coherence(body)
     
     # 신뢰도 점수 가중치 설정
     title_weight = 0.7  # 제목과 본문의 일치도 가중치
