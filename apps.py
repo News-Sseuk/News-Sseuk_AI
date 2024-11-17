@@ -8,7 +8,7 @@ app.config.from_object(Mongo_Config)
 app.config.from_object(Mysql_Config)
 api = Api(app)  # Flask 객체에 Api 객체 등록
 
-api.add_namespace(article, '/article/detail')
+api.add_namespace(article, '/article')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=80)
