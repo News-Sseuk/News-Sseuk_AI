@@ -6,10 +6,13 @@ from reliability.score import calculate_news_reliability
 from summarization.summary import summarize_article
 from summarization.issue import extract_issue_article
 from recommendation.keyword import extract_keywords
+from datetime import datetime, timedelta
+from recommendation.recommend import recommend_similar_articles, recommend_articles_based_on_keywords
+import pandas as pd
 
 article = Namespace('Article')
 
-@article.route('')
+@article.route('/detail')
 class save_each_article_detail(Resource):
     def post(self):
         db_connection = Mysql.get_mysql_connection(self)
@@ -42,7 +45,61 @@ class save_each_article_detail(Resource):
             cursor.execute(insert_query)
             cursor.execute(map_sql, (row[0],))
 
-            db_connection.commit()  # 이걸 해야 적용됨.
+            db_connection.commit()
 
         cursor.close()
         Mysql.close_mysql_connection(self, cursor, db_connection)
+
+class today_articles:
+    def get_dataframe(self):
+        db_object = Mongo.get_mongo_connection(self)
+
+        # 오늘 날짜와 7일 전 날짜 계산
+        end_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        start_date = end_date - timedelta(days=7)
+
+        # MongoDB에서 날짜 필터링하여 관련 기사 검색
+        relevant_articles = db_object.find(
+            {
+                "publishedDate": {
+                    "$gte": start_date,
+                    "$lte": end_date
+                }
+            },
+            {"_id": True, "content": True}  # 필요한 필드만 반환
+        )
+
+        # 결과를 DataFrame 형태로 변환
+        articles_data = [
+            {"article_id": str(article["_id"]), "content": article["content"]}
+            for article in relevant_articles
+        ]
+        articles_df = pd.DataFrame(articles_data)
+        return articles_df
+
+
+@article.route('/each')
+class recommend_article_by_issue(Resource):
+    def get(self):
+        db_connection = Mysql.get_mysql_connection(self)
+        cursor = db_connection.cursor()
+        article_id = request.args.get("nosql_id")
+
+        query = 'SELECT a.issue FROM article a WHERE a.nosql_id= %s'
+        cursor.execute(query, (article_id,))
+        row = cursor.fetchall()
+
+        articles_df = today_articles.get_dataframe(self)
+
+        cursor.close()
+        Mysql.close_mysql_connection(self, cursor, db_connection)
+        return recommend_similar_articles(row[0][0], articles_df)  # List[str] 형태로 기사의 nosql_id 리스트 반환
+
+
+@article.route('/personalizing')
+class recommend_article_by_userhistory(Resource):
+    def post(self):
+        data = request.get_json()
+        keyword_list = data["keywords_list"]
+        articles_df = today_articles.get_dataframe(self)
+        return recommend_articles_based_on_keywords(keyword_list, articles_df)
