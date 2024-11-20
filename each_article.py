@@ -37,8 +37,8 @@ class save_each_article_detail(Resource):
                             .format(", ".join(f"('{keyword}')" for keyword in keyword_list)))
             # 2. ArticleHashTag에 매핑을 추가하기 위한 SQL
             map_sql = ("""
-            INSERT INTO article_hash_tag (article_id, hashtag_id)
-            SELECT %s, id FROM hash_tag WHERE name IN ({})"""
+            INSERT INTO article_hash_tag (article_id, hashtag_id, created_time)
+            SELECT %s, id, NOW() FROM hash_tag WHERE name IN ({})"""
                        .format(", ".join(f"'{keyword}'" for keyword in keyword_list)))
 
             cursor.execute(update_query, (int(score), summarized_text, issue_text, row[0],))

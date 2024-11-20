@@ -3,3 +3,4 @@ config.py
 /reliability/checkpoints/
 /summarization/*/model.safetensors
 /*/__pycache__/
+*.log
