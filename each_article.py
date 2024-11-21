@@ -53,28 +53,28 @@ class save_each_article_detail(Resource):
 class today_articles:
     def get_dataframe(self):
         db_object = Mongo.get_mongo_connection(self)
+        db_connection = Mysql.get_mysql_connection(self)
+        cursor = db_connection.cursor()
 
-        # 오늘 날짜와 7일 전 날짜 계산
-        end_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        start_date = end_date - timedelta(days=7)
+        nosql_find_query = "SELECT a.nosql_id as nosql_id FROM article a WHERE crawled_time BETWEEN DATE_SUB(CURDATE()+INTERVAL 1 DAY, INTERVAL 7 DAY) AND CURDATE()+INTERVAL 1 DAY"
+        cursor.execute(nosql_find_query)
+        result = cursor.fetchall()
+        # Extract nosql_id as a list
+        nosql_ids = [ObjectId(row[0]) for row in result]
 
-        # MongoDB에서 날짜 필터링하여 관련 기사 검색
-        relevant_articles = db_object.find(
-            {
-                "publishedDate": {
-                    "$gte": start_date,
-                    "$lte": end_date
-                }
-            },
-            {"_id": True, "content": True}  # 필요한 필드만 반환
-        )
+        # Query MongoDB
+        content_query = {"_id": {"$in": nosql_ids}}
+        projection = {"content": True, "_id": True}  # Retrieve only needed fields
+        mongo_result = db_object.find(content_query, projection)
 
         # 결과를 DataFrame 형태로 변환
-        articles_data = [
+        articles_df = pd.DataFrame([
             {"article_id": str(article["_id"]), "content": article["content"]}
-            for article in relevant_articles
-        ]
-        articles_df = pd.DataFrame(articles_data)
+            for article in mongo_result
+        ])
+
+        cursor.close()
+        Mysql.close_mysql_connection(self, cursor, db_connection)
         return articles_df
 
 
@@ -88,7 +88,8 @@ class recommend_article_by_issue(Resource):
         query = 'SELECT a.issue FROM article a WHERE a.nosql_id= %s'
         cursor.execute(query, (article_id,))
         row = cursor.fetchall()
-
+        if not row[0][0]:
+            return None
         articles_df = today_articles.get_dataframe(self)
 
         cursor.close()
